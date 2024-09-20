@@ -30,7 +30,7 @@ import ObjectiveC
 }
 
 public enum HeaderRefresherState {
-    case refreshing //刷新中
+    case refreshing(TimeInterval) //刷新中
     case normal(RefreshResult,TimeInterval)//正常状态
     case removed //移除
 }
@@ -89,8 +89,8 @@ public extension UIScrollView{
     func switchRefreshHeader(to state:HeaderRefresherState){
         let header = self.viewWithTag(PullToRefreshKitConst.headerTag) as? RefreshHeaderContainer
         switch state {
-        case .refreshing:
-            header?.beginRefreshing()
+        case .refreshing(let interval):
+            header?.beginRefreshing(duration: interval)
         case .normal(let result, let delay):
             header?.endRefreshing(result,delay: delay)
         case .removed:

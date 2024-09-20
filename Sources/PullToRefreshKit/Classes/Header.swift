@@ -226,6 +226,7 @@ open class RefreshHeaderContainer:UIView{
     var refreshAction:(()->())?
     var attachedScrollView:UIScrollView!
     var originalInset:UIEdgeInsets?
+    var durationOfDisplayRefreshing = 0.4
     var durationOfEndRefreshing = 0.4
     weak var delegate:RefreshableHeader?
     fileprivate var currentResult:RefreshResult = .none
@@ -269,7 +270,7 @@ open class RefreshHeaderContainer:UIView{
                     let topShowOffsetY = -1.0 * self.originalInset!.top
                     let normal2pullingOffsetY = topShowOffsetY - fireHeight
                     let currentOffset = self.attachedScrollView.contentOffset
-                    UIView.animate(withDuration: 0.4, animations: {
+                    UIView.animate(withDuration: self.durationOfDisplayRefreshing, animations: {
                         let top = (self.originalInset?.top)! + insetHeight
                         var oldInset = self.attachedScrollView.contentInset
                         oldInset.top = top
@@ -305,12 +306,6 @@ open class RefreshHeaderContainer:UIView{
     }
     
     // MARK: - Life circle -
-    open override func draw(_ rect: CGRect) {
-        super.draw(rect)
-        if self.state == .willRefresh {
-            self.state = .refreshing
-        }
-    }
     open override func willMove(toSuperview newSuperview: UIView?) {
         super.willMove(toSuperview: newSuperview)
         guard newSuperview is UIScrollView else{
@@ -320,6 +315,12 @@ open class RefreshHeaderContainer:UIView{
         attachedScrollView.alwaysBounceVertical = true
         originalInset = attachedScrollView?.contentInset
         addObservers()
+    }
+    open override func didMoveToWindow() {
+        super.didMoveToWindow()
+        if self.state == .willRefresh {
+            self.state = .refreshing
+        }
     }
     deinit{
         clearTimer()
@@ -396,7 +397,8 @@ open class RefreshHeaderContainer:UIView{
         }
     }
     // MARK: - API -
-    func beginRefreshing(){
+    func beginRefreshing(duration:TimeInterval = 0.4){
+        self.durationOfDisplayRefreshing = duration
         if self.window != nil {
             self.state = .refreshing
         }else{
